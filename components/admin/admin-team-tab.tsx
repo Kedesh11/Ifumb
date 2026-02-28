@@ -17,6 +17,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
+import { ImageUpload } from "./image-upload"
 import type { SiteData, Founder } from "@/lib/site-data"
 
 interface Props {
@@ -70,6 +71,20 @@ export function AdminTeamTab({ data, setData }: Props) {
     }))
   }
 
+  const moveFounder = (index: number, direction: "up" | "down") => {
+    setData((prev) => {
+      const updated = [...prev.founders]
+      const targetIndex = direction === "up" ? index - 1 : index + 1
+      if (targetIndex < 0 || targetIndex >= updated.length) return prev
+
+      const temp = updated[index]
+      updated[index] = updated[targetIndex]
+      updated[targetIndex] = temp
+
+      return { ...prev, founders: updated }
+    })
+  }
+
   // Experience helpers
   const addExperience = (fIndex: number) => {
     const founder = founders[fIndex]
@@ -93,6 +108,18 @@ export function AdminTeamTab({ data, setData }: Props) {
     const exp = [...founder.experience]
     exp[eIndex] = { ...exp[eIndex], [field]: value }
     updateFounder(fIndex, "experience", exp)
+  }
+
+  const moveExperience = (fIndex: number, eIndex: number, direction: "up" | "down") => {
+    const founder = founders[fIndex]
+    const updated = [...founder.experience]
+    const targetIndex = direction === "up" ? eIndex - 1 : eIndex + 1
+    if (targetIndex < 0 || targetIndex >= updated.length) return
+    
+    const temp = updated[eIndex]
+    updated[eIndex] = updated[targetIndex]
+    updated[targetIndex] = temp
+    updateFounder(fIndex, "experience", updated)
   }
 
   // Project helpers
@@ -120,6 +147,18 @@ export function AdminTeamTab({ data, setData }: Props) {
     updateFounder(fIndex, "projects", proj)
   }
 
+  const moveTeamProject = (fIndex: number, pIndex: number, direction: "up" | "down") => {
+    const founder = founders[fIndex]
+    const updated = [...founder.projects]
+    const targetIndex = direction === "up" ? pIndex - 1 : pIndex + 1
+    if (targetIndex < 0 || targetIndex >= updated.length) return
+
+    const temp = updated[pIndex]
+    updated[pIndex] = updated[targetIndex]
+    updated[targetIndex] = temp
+    updateFounder(fIndex, "projects", updated)
+  }
+
   // Skill helpers
   const addSkill = (fIndex: number) => {
     const founder = founders[fIndex]
@@ -143,6 +182,18 @@ export function AdminTeamTab({ data, setData }: Props) {
     const skills = [...founder.skills]
     skills[sIndex] = { ...skills[sIndex], [field]: value }
     updateFounder(fIndex, "skills", skills)
+  }
+
+  const moveSkill = (fIndex: number, sIndex: number, direction: "up" | "down") => {
+    const founder = founders[fIndex]
+    const updated = [...founder.skills]
+    const targetIndex = direction === "up" ? sIndex - 1 : sIndex + 1
+    if (targetIndex < 0 || targetIndex >= updated.length) return
+
+    const temp = updated[sIndex]
+    updated[sIndex] = updated[targetIndex]
+    updated[targetIndex] = temp
+    updateFounder(fIndex, "skills", updated)
   }
 
   // Certification helpers
@@ -170,6 +221,18 @@ export function AdminTeamTab({ data, setData }: Props) {
     updateFounder(fIndex, "certifications", certs)
   }
 
+  const moveCertification = (fIndex: number, cIndex: number, direction: "up" | "down") => {
+    const founder = founders[fIndex]
+    const updated = [...founder.certifications]
+    const targetIndex = direction === "up" ? cIndex - 1 : cIndex + 1
+    if (targetIndex < 0 || targetIndex >= updated.length) return
+
+    const temp = updated[cIndex]
+    updated[cIndex] = updated[targetIndex]
+    updated[targetIndex] = temp
+    updateFounder(fIndex, "certifications", updated)
+  }
+
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <div className="flex items-center justify-between">
@@ -190,10 +253,9 @@ export function AdminTeamTab({ data, setData }: Props) {
             className="rounded-xl border border-border bg-card overflow-hidden"
           >
             {/* Collapsed header */}
-            <button
-              type="button"
+            <div
               onClick={() => setExpandedId(isExpanded ? null : founder.id)}
-              className="flex w-full items-center gap-4 p-4 text-left transition-colors hover:bg-secondary/30"
+              className="flex w-full cursor-pointer items-center gap-4 p-4 text-left transition-colors hover:bg-secondary/30"
             >
               <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg">
                 <Image
@@ -209,7 +271,31 @@ export function AdminTeamTab({ data, setData }: Props) {
                 </p>
                 <p className="text-xs text-muted-foreground">{founder.role}</p>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    moveFounder(fIndex, "up")
+                  }}
+                  disabled={fIndex === 0}
+                  className="h-8 w-8 text-muted-foreground"
+                >
+                  <ChevronUp className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    moveFounder(fIndex, "down")
+                  }}
+                  disabled={fIndex === founders.length - 1}
+                  className="h-8 w-8 text-muted-foreground"
+                >
+                  <ChevronDown className="h-4 w-4" />
+                </Button>
                 <Button
                   variant="ghost"
                   size="icon"
@@ -217,17 +303,19 @@ export function AdminTeamTab({ data, setData }: Props) {
                     e.stopPropagation()
                     removeFounder(fIndex)
                   }}
-                  className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                  className="h-8 w-8 text-muted-foreground hover:text-destructive ml-1"
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
-                {isExpanded ? (
-                  <ChevronUp className="h-4 w-4 text-muted-foreground" />
-                ) : (
-                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                )}
+                <div className="ml-2">
+                  {isExpanded ? (
+                    <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                  ) : (
+                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                  )}
+                </div>
               </div>
-            </button>
+            </div>
 
             {/* Expanded content */}
             {isExpanded && (
@@ -287,11 +375,11 @@ export function AdminTeamTab({ data, setData }: Props) {
                         onChange={(e) => updateFounder(fIndex, "education", e.target.value)}
                       />
                     </div>
-                    <div>
-                      <Label>URL Image</Label>
-                      <Input
+                    <div className="sm:col-span-2">
+                      <ImageUpload
+                        label="Photo de profil"
                         value={founder.image}
-                        onChange={(e) => updateFounder(fIndex, "image", e.target.value)}
+                        onChange={(url) => updateFounder(fIndex, "image", url)}
                       />
                     </div>
                   </div>
@@ -342,14 +430,34 @@ export function AdminTeamTab({ data, setData }: Props) {
                           <span className="text-[10px] text-muted-foreground">
                             Experience {eIndex + 1}
                           </span>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => removeExperience(fIndex, eIndex)}
-                            className="h-6 w-6 text-muted-foreground hover:text-destructive"
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
+                          <div className="flex items-center gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => moveExperience(fIndex, eIndex, "up")}
+                              disabled={eIndex === 0}
+                              className="h-6 w-6 text-muted-foreground"
+                            >
+                              <ChevronUp className="h-3 w-3" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => moveExperience(fIndex, eIndex, "down")}
+                              disabled={eIndex === founder.experience.length - 1}
+                              className="h-6 w-6 text-muted-foreground"
+                            >
+                              <ChevronDown className="h-3 w-3" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => removeExperience(fIndex, eIndex)}
+                              className="h-6 w-6 text-muted-foreground hover:text-destructive ml-1"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
                         </div>
                         <div className="grid gap-2 sm:grid-cols-3">
                           <Input
@@ -417,14 +525,34 @@ export function AdminTeamTab({ data, setData }: Props) {
                           <span className="text-[10px] text-muted-foreground">
                             Projet {pIndex + 1}
                           </span>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => removeProject(fIndex, pIndex)}
-                            className="h-6 w-6 text-muted-foreground hover:text-destructive"
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
+                          <div className="flex items-center gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => moveTeamProject(fIndex, pIndex, "up")}
+                              disabled={pIndex === 0}
+                              className="h-6 w-6 text-muted-foreground"
+                            >
+                              <ChevronUp className="h-3 w-3" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => moveTeamProject(fIndex, pIndex, "down")}
+                              disabled={pIndex === founder.projects.length - 1}
+                              className="h-6 w-6 text-muted-foreground"
+                            >
+                              <ChevronDown className="h-3 w-3" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => removeProject(fIndex, pIndex)}
+                              className="h-6 w-6 text-muted-foreground hover:text-destructive ml-1"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
                         </div>
                         <div className="grid gap-2 sm:grid-cols-2">
                           <Input
@@ -513,14 +641,34 @@ export function AdminTeamTab({ data, setData }: Props) {
                           />
                         </div>
                         <span className="pb-2 text-xs text-muted-foreground">%</span>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => removeSkill(fIndex, sIndex)}
-                          className="h-9 w-9 shrink-0 text-muted-foreground hover:text-destructive"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
+                        <div className="flex items-center gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => moveSkill(fIndex, sIndex, "up")}
+                            disabled={sIndex === 0}
+                            className="h-9 w-9 text-muted-foreground"
+                          >
+                            <ChevronUp className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => moveSkill(fIndex, sIndex, "down")}
+                            disabled={sIndex === founder.skills.length - 1}
+                            className="h-9 w-9 text-muted-foreground"
+                          >
+                            <ChevronDown className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => removeSkill(fIndex, sIndex)}
+                            className="h-9 w-9 text-muted-foreground hover:text-destructive ml-1"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -545,9 +693,42 @@ export function AdminTeamTab({ data, setData }: Props) {
                       Ajouter
                     </Button>
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-4">
                     {founder.certifications.map((cert, cIndex) => (
-                      <div key={cIndex} className="flex items-center gap-2">
+                      <div key={cIndex} className="rounded-lg border border-border bg-secondary/20 p-3">
+                        <div className="mb-2 flex items-center justify-between">
+                          <span className="text-[10px] text-muted-foreground">
+                            Certification {cIndex + 1}
+                          </span>
+                          <div className="flex items-center gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => moveCertification(fIndex, cIndex, "up")}
+                              disabled={cIndex === 0}
+                              className="h-6 w-6 text-muted-foreground"
+                            >
+                              <ChevronUp className="h-3 w-3" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => moveCertification(fIndex, cIndex, "down")}
+                              disabled={cIndex === founder.certifications.length - 1}
+                              className="h-6 w-6 text-muted-foreground"
+                            >
+                              <ChevronDown className="h-3 w-3" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => removeCertification(fIndex, cIndex)}
+                              className="h-6 w-6 text-muted-foreground hover:text-destructive ml-1"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </div>
                         <Input
                           value={cert}
                           onChange={(e) =>
@@ -555,14 +736,6 @@ export function AdminTeamTab({ data, setData }: Props) {
                           }
                           className="flex-1"
                         />
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => removeCertification(fIndex, cIndex)}
-                          className="h-9 w-9 shrink-0 text-muted-foreground hover:text-destructive"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
                       </div>
                     ))}
                   </div>

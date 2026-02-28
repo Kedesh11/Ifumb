@@ -1,6 +1,6 @@
 "use client"
 
-import { Trash2, Plus } from "lucide-react"
+import { Trash2, Plus, ChevronUp, ChevronDown } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
@@ -71,6 +71,20 @@ export function AdminAboutTab({ data, setData }: Props) {
     }))
   }
 
+  const moveValue = (index: number, direction: "up" | "down") => {
+    setData((prev) => {
+      const updated = [...prev.about.values]
+      const targetIndex = direction === "up" ? index - 1 : index + 1
+      if (targetIndex < 0 || targetIndex >= updated.length) return prev
+
+      const temp = updated[index]
+      updated[index] = updated[targetIndex]
+      updated[targetIndex] = temp
+
+      return { ...prev, about: { ...prev.about, values: updated } }
+    })
+  }
+
   return (
     <div className="mx-auto max-w-2xl space-y-8">
       <div className="rounded-xl border border-border bg-card p-6">
@@ -124,14 +138,34 @@ export function AdminAboutTab({ data, setData }: Props) {
                 <span className="text-xs font-medium text-primary">
                   Valeur {index + 1}
                 </span>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => removeValue(index)}
-                  className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </Button>
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => moveValue(index, "up")}
+                    disabled={index === 0}
+                    className="h-7 w-7 text-muted-foreground"
+                  >
+                    <ChevronUp className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => moveValue(index, "down")}
+                    disabled={index === about.values.length - 1}
+                    className="h-7 w-7 text-muted-foreground"
+                  >
+                    <ChevronDown className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => removeValue(index)}
+                    className="h-7 w-7 text-muted-foreground hover:text-destructive ml-1"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
               </div>
               <div className="grid gap-3 sm:grid-cols-2">
                 <div>

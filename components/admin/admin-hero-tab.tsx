@@ -1,10 +1,11 @@
 "use client"
 
-import { Trash2, Plus } from "lucide-react"
+import { Trash2, Plus, ChevronUp, ChevronDown } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
+import { ImageUpload } from "./image-upload"
 import type { SiteData } from "@/lib/site-data"
 
 interface Props {
@@ -50,6 +51,20 @@ export function AdminHeroTab({ data, setData }: Props) {
     }))
   }
 
+  const moveStat = (index: number, direction: "up" | "down") => {
+    setData((prev) => {
+      const stats = [...prev.hero.stats]
+      const targetIndex = direction === "up" ? index - 1 : index + 1
+      if (targetIndex < 0 || targetIndex >= stats.length) return prev
+
+      const temp = stats[index]
+      stats[index] = stats[targetIndex]
+      stats[targetIndex] = temp
+
+      return { ...prev, hero: { ...prev.hero, stats } }
+    })
+  }
+
   return (
     <div className="mx-auto max-w-2xl space-y-8">
       <div className="rounded-xl border border-border bg-card p-6">
@@ -88,6 +103,13 @@ export function AdminHeroTab({ data, setData }: Props) {
               value={hero.subtitle}
               onChange={(e) => update("subtitle", e.target.value)}
               rows={3}
+            />
+          </div>
+          <div>
+            <ImageUpload
+              label="Image de fond"
+              value={hero.backgroundImage}
+              onChange={(url) => update("backgroundImage", url)}
             />
           </div>
         </div>
@@ -144,14 +166,34 @@ export function AdminHeroTab({ data, setData }: Props) {
                   onChange={(e) => updateStat(index, "label", e.target.value)}
                 />
               </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => removeStat(index)}
-                className="shrink-0 text-muted-foreground hover:text-destructive"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
+              <div className="flex shrink-0 items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => moveStat(index, "up")}
+                  disabled={index === 0}
+                  className="h-8 w-8 text-muted-foreground"
+                >
+                  <ChevronUp className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => moveStat(index, "down")}
+                  disabled={index === hero.stats.length - 1}
+                  className="h-8 w-8 text-muted-foreground"
+                >
+                  <ChevronDown className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => removeStat(index)}
+                  className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           ))}
         </div>

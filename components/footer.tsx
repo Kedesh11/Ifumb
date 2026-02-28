@@ -1,7 +1,9 @@
 "use client"
 
 import Link from "next/link"
+import { FormEvent, useState } from "react"
 import { Linkedin, Twitter, Github } from "lucide-react"
+import { SiteService } from "@/lib/services/site-service"
 
 const navigation = {
   services: [
@@ -24,6 +26,28 @@ const navigation = {
 }
 
 export function Footer() {
+  const [newsletterEmail, setNewsletterEmail] = useState("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const handleNewsletterSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    if (!newsletterEmail.trim()) return
+
+    setIsSubmitting(true)
+    const status = await SiteService.submitNewsletterSubscription(newsletterEmail)
+
+    if (status === "success") {
+      alert("Merci, votre abonnement a ete enregistre.")
+      setNewsletterEmail("")
+    } else if (status === "exists") {
+      alert("Cette adresse email est deja abonnee.")
+    } else {
+      alert("Une erreur est survenue. Veuillez reessayer.")
+    }
+
+    setIsSubmitting(false)
+  }
+
   return (
     <footer className="border-t border-border bg-card">
       <div className="mx-auto max-w-7xl px-6 py-16">
@@ -109,18 +133,22 @@ export function Footer() {
             </p>
             <form
               className="flex gap-2"
-              onSubmit={(e) => e.preventDefault()}
+              onSubmit={handleNewsletterSubmit}
             >
               <input
                 type="email"
+                value={newsletterEmail}
+                onChange={(e) => setNewsletterEmail(e.target.value)}
                 placeholder="votre@email.com"
+                required
                 className="flex-1 rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
               />
               <button
                 type="submit"
+                disabled={isSubmitting}
                 className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
               >
-                OK
+                {isSubmitting ? "..." : "OK"}
               </button>
             </form>
           </div>

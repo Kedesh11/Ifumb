@@ -1,6 +1,6 @@
 "use client"
 
-import { Trash2, Plus } from "lucide-react"
+import { Trash2, Plus, ChevronUp, ChevronDown } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
@@ -46,6 +46,20 @@ export function AdminProcessTab({ data, setData }: Props) {
     }))
   }
 
+  const moveStep = (index: number, direction: "up" | "down") => {
+    setData((prev) => {
+      const updated = [...prev.process]
+      const targetIndex = direction === "up" ? index - 1 : index + 1
+      if (targetIndex < 0 || targetIndex >= updated.length) return prev
+
+      const temp = updated[index]
+      updated[index] = updated[targetIndex]
+      updated[targetIndex] = temp
+
+      return { ...prev, process: updated }
+    })
+  }
+
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <div className="flex items-center justify-between">
@@ -67,14 +81,34 @@ export function AdminProcessTab({ data, setData }: Props) {
             <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-lg font-bold text-primary font-mono">
               {step.number}
             </span>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => removeStep(index)}
-              className="text-muted-foreground hover:text-destructive"
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => moveStep(index, "up")}
+                disabled={index === 0}
+                className="h-8 w-8 text-muted-foreground"
+              >
+                <ChevronUp className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => moveStep(index, "down")}
+                disabled={index === steps.length - 1}
+                className="h-8 w-8 text-muted-foreground"
+              >
+                <ChevronDown className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => removeStep(index)}
+                className="text-muted-foreground hover:text-destructive ml-2"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
           <div className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">

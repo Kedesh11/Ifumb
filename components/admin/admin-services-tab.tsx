@@ -1,6 +1,6 @@
 "use client"
 
-import { Trash2, Plus, GripVertical } from "lucide-react"
+import { Trash2, Plus, GripVertical, ChevronUp, ChevronDown } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
@@ -64,6 +64,20 @@ export function AdminServicesTab({ data, setData }: Props) {
     }))
   }
 
+  const moveService = (index: number, direction: "up" | "down") => {
+    setData((prev) => {
+      const updated = [...prev.services]
+      const targetIndex = direction === "up" ? index - 1 : index + 1
+      if (targetIndex < 0 || targetIndex >= updated.length) return prev
+      
+      const temp = updated[index]
+      updated[index] = updated[targetIndex]
+      updated[targetIndex] = temp
+      
+      return { ...prev, services: updated }
+    })
+  }
+
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <div className="flex items-center justify-between">
@@ -88,14 +102,34 @@ export function AdminServicesTab({ data, setData }: Props) {
                 Service {index + 1}
               </span>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => removeService(index)}
-              className="text-muted-foreground hover:text-destructive"
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => moveService(index, "up")}
+                disabled={index === 0}
+                className="h-8 w-8 text-muted-foreground"
+              >
+                <ChevronUp className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => moveService(index, "down")}
+                disabled={index === services.length - 1}
+                className="h-8 w-8 text-muted-foreground"
+              >
+                <ChevronDown className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => removeService(index)}
+                className="text-muted-foreground hover:text-destructive ml-2"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
           <div className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">

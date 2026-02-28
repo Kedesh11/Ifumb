@@ -23,6 +23,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Separator } from "@/components/ui/separator"
+import { useSiteData } from "@/lib/site-data"
 
 interface Project {
   title: string
@@ -60,7 +61,7 @@ interface Founder {
   certifications: string[]
 }
 
-const founders: Founder[] = [
+const defaultFounders: Founder[] = [
   {
     name: "Fondateur 1",
     role: "CEO & Co-fondateur",
@@ -72,7 +73,7 @@ const founders: Founder[] = [
     email: "ceo@ifumb.com",
     bio: "Entrepreneur passionne par la transformation digitale en Afrique, il a fonde IFUMB avec la conviction que la technologie est le levier le plus puissant pour accelerer le developpement. Fort de plusieurs annees d'experience en strategie d'entreprise et en gestion de projets technologiques, il guide l'equipe vers des solutions a fort impact.",
     education: "Master en Management & Innovation Digitale",
-    location: "Kinshasa, RDC",
+    location: "Libreville, Gabon",
     experience: [
       {
         role: "CEO & Co-fondateur",
@@ -142,7 +143,7 @@ const founders: Founder[] = [
     email: "cto@ifumb.com",
     bio: "Ingenieur logiciel et specialiste en cybersecurite, il concoit les architectures techniques d'IFUMB avec un souci constant de performance, de securite et de scalabilite. Sa maitrise des technologies modernes et sa rigueur font de lui le garant de l'excellence technique de chaque projet.",
     education: "Ingenieur en Informatique & Cybersecurite",
-    location: "Kinshasa, RDC",
+    location: "Libreville, Gabon",
     experience: [
       {
         role: "CTO & Co-fondateur",
@@ -459,6 +460,8 @@ export function TeamSection() {
   const [isVisible, setIsVisible] = useState(false)
   const [selectedFounder, setSelectedFounder] = useState<Founder | null>(null)
   const sectionRef = useRef<HTMLDivElement>(null)
+  const { data } = useSiteData()
+  const founders = data.founders.length > 0 ? data.founders : defaultFounders
 
   useEffect(() => {
     const observer = new IntersectionObserver(

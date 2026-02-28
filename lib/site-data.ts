@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
+import { SiteService } from "./services/site-service"
 
 // ─── Types ──────────────────────────────────────────────────────
 
@@ -12,6 +13,7 @@ export interface HeroData {
   ctaPrimary: string
   ctaSecondary: string
   stats: { value: string; label: string }[]
+  backgroundImage: string
 }
 
 export interface ServiceItem {
@@ -46,6 +48,16 @@ export interface ProcessStep {
 export interface Project {
   title: string
   description: string
+  tags: string[]
+  link?: string
+  image?: string
+}
+
+export interface ProjectItem {
+  id: string
+  title: string
+  description: string
+  image: string
   tags: string[]
   link?: string
 }
@@ -95,6 +107,7 @@ export interface SiteData {
   process: ProcessStep[]
   founders: Founder[]
   contact: ContactData
+  projects: ProjectItem[]
 }
 
 // ─── Defaults ───────────────────────────────────────────────────
@@ -114,6 +127,7 @@ export const defaultSiteData: SiteData = {
       { value: "3", label: "Co-fondateurs" },
       { value: "7+", label: "Expertises" },
     ],
+    backgroundImage: "/images/hero-bg.jpg",
   },
   services: [
     {
@@ -247,7 +261,7 @@ export const defaultSiteData: SiteData = {
       email: "ceo@ifumb.com",
       bio: "Entrepreneur passionne par la transformation digitale en Afrique, il a fonde IFUMB avec la conviction que la technologie est le levier le plus puissant pour accelerer le developpement.",
       education: "Master en Management & Innovation Digitale",
-      location: "Kinshasa, RDC",
+      location: "Libreville, Gabon",
       experience: [
         {
           role: "CEO & Co-fondateur",
@@ -302,7 +316,7 @@ export const defaultSiteData: SiteData = {
       email: "cto@ifumb.com",
       bio: "Ingenieur logiciel et specialiste en cybersecurite, il concoit les architectures techniques d'IFUMB avec un souci constant de performance et securite.",
       education: "Ingenieur en Informatique & Cybersecurite",
-      location: "Kinshasa, RDC",
+      location: "Libreville, Gabon",
       experience: [
         {
           role: "CTO & Co-fondateur",
@@ -357,7 +371,7 @@ export const defaultSiteData: SiteData = {
       email: "coo@ifumb.com",
       bio: "Passionne par le marketing digital et la communication strategique, il est le moteur operationnel d'IFUMB.",
       education: "Master en Marketing Digital & Communication",
-      location: "Kinshasa, RDC",
+      location: "Libreville, Gabon",
       experience: [
         {
           role: "COO & Co-fondateur",
@@ -402,13 +416,39 @@ export const defaultSiteData: SiteData = {
     },
   ],
   contact: {
-    email: "contact@ifumb.com",
-    phone: "+243 000 000 000",
-    address: "Kinshasa, RD Congo",
+    email: "ifumbgabon3@gmail.com",
+    phone: "077172820",
+    address: "Libreville, Gabon",
     urgentTitle: "Besoin urgent ?",
     urgentText:
       "Appelez-nous directement ou envoyez un email pour une reponse rapide.",
   },
+  projects: [
+    {
+      id: "p1",
+      title: "Plateforme E-Gov",
+      description: "Une solution complète de gouvernance électronique pour moderniser les services publics.",
+      image: "/images/project-1.jpg",
+      tags: ["Next.js", "Supabase", "GovTech"],
+      link: "#",
+    },
+    {
+      id: "p2",
+      title: "FinTech Connect",
+      description: "Application mobile de microfinance facilitant l'accès au crédit pour les entrepreneurs locaux.",
+      image: "/images/project-2.jpg",
+      tags: ["React Native", "Node.js", "FinTech"],
+      link: "#",
+    },
+    {
+      id: "p3",
+      title: "EduCloud RDC",
+      description: "Plateforme d'apprentissage en ligne destinée aux universités et centres de formation.",
+      image: "/images/project-3.jpg",
+      tags: ["LMS", "Cloud", "Education"],
+      link: "#",
+    },
+  ],
 }
 
 // ─── LocalStorage key ───────────────────────────────────────────
@@ -441,9 +481,22 @@ export function useSiteData() {
   const [data, setDataState] = useState<SiteData>(defaultSiteData)
   const [isLoaded, setIsLoaded] = useState(false)
 
+  // Initial load from LocalStorage (sync) and Supabase (async)
   useEffect(() => {
-    setDataState(loadData())
-    setIsLoaded(true)
+    const localData = loadData()
+    setDataState(localData)
+    
+    // Sync from Supabase in background
+    const syncFromBackend = async () => {
+      const backendData = await SiteService.getSiteData()
+      if (backendData) {
+        saveData(backendData) // Update LocalStorage
+        setDataState(backendData)
+      }
+      setIsLoaded(true)
+    }
+
+    syncFromBackend()
   }, [])
 
   // Listen for storage changes from other tabs/components
@@ -460,20 +513,38 @@ export function useSiteData() {
     }
   }, [])
 
-  const setData = useCallback((updater: SiteData | ((prev: SiteData) => SiteData)) => {
-    setDataState((prev) => {
-      const next = typeof updater === "function" ? updater(prev) : updater
-      saveData(next)
-      // Dispatch custom event so other components pick it up
-      window.dispatchEvent(new Event("site-data-updated"))
-      return next
-    })
-  }, [])
+  const setData = useCallback(
+    (updater: SiteData | ((prev: SiteData) => SiteData)) => {
+      setDataState((prev) => {
+        const next = typeof updater === "function" ? updater(prev) : updater
+        
+        // 1. Update LocalStorage for immediate local feel
+        saveData(next)
+        
+        // 2. Update Supabase in background
+        SiteService.saveSiteData(next).then((success) => {
+          if (!success) {
+            console.error("Failed to sync data to Supabase")
+          }
+        })
 
-  const resetData = useCallback(() => {
+        // 3. Dispatch custom event so other components pick it up
+        window.dispatchEvent(new Event("site-data-updated"))
+        
+        return next
+      })
+    },
+    []
+  )
+
+  const resetData = useCallback(async () => {
+    // 1. Reset locally
     saveData(defaultSiteData)
     setDataState(defaultSiteData)
     window.dispatchEvent(new Event("site-data-updated"))
+
+    // 2. Reset on backend
+    await SiteService.resetToDefaults()
   }, [])
 
   return { data, setData, resetData, isLoaded }

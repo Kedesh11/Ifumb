@@ -1,12 +1,18 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { Mail, Phone, MapPin, Send } from "lucide-react"
+import { Mail, Phone, MapPin, Send, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { SiteService } from "@/lib/services/site-service"
+import { useSiteData } from "@/lib/site-data"
 
 export function ContactSection() {
   const [isVisible, setIsVisible] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const sectionRef = useRef<HTMLDivElement>(null)
+  const { data } = useSiteData()
+  const contact = data.contact
+  const phoneHref = `tel:${contact.phone.replace(/\s+/g, "")}`
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -26,11 +32,20 @@ export function ContactSection() {
     message: "",
   })
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Handle form submission
-    alert("Merci pour votre message ! Nous vous recontacterons rapidement.")
-    setFormData({ name: "", email: "", subject: "", message: "" })
+    setIsSubmitting(true)
+
+    const success = await SiteService.submitContactMessage(formData)
+
+    if (success) {
+      alert("Merci pour votre message ! Nous vous recontacterons rapidement.")
+      setFormData({ name: "", email: "", subject: "", message: "" })
+    } else {
+      alert("Une erreur est survenue lors de l'envoi. Veuillez reessayer.")
+    }
+
+    setIsSubmitting(false)
   }
 
   return (
@@ -74,10 +89,10 @@ export function ContactSection() {
                       Email
                     </p>
                     <a
-                      href="mailto:contact@ifumb.com"
+                      href={`mailto:${contact.email}`}
                       className="text-sm text-muted-foreground hover:text-primary transition-colors"
                     >
-                      contact@ifumb.com
+                      {contact.email}
                     </a>
                   </div>
                 </div>
@@ -90,10 +105,10 @@ export function ContactSection() {
                       Telephone
                     </p>
                     <a
-                      href="tel:+243000000000"
+                      href={phoneHref}
                       className="text-sm text-muted-foreground hover:text-primary transition-colors"
                     >
-                      +243 000 000 000
+                      {contact.phone}
                     </a>
                   </div>
                 </div>
@@ -106,7 +121,7 @@ export function ContactSection() {
                       Adresse
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      Kinshasa, RD Congo
+                      {contact.address}
                     </p>
                   </div>
                 </div>
@@ -116,18 +131,17 @@ export function ContactSection() {
             {/* Quick CTA */}
             <div className="rounded-xl bg-primary p-6 text-primary-foreground">
               <h3 className="mb-2 text-lg font-semibold font-mono">
-                Besoin urgent ?
+                {contact.urgentTitle}
               </h3>
               <p className="mb-4 text-sm text-primary-foreground/80">
-                Appelez-nous directement ou envoyez un email pour une reponse
-                rapide.
+                {contact.urgentText}
               </p>
               <Button
                 asChild
                 variant="secondary"
                 className="bg-primary-foreground text-primary hover:bg-primary-foreground/90"
               >
-                <a href="mailto:contact@ifumb.com">Envoyer un email</a>
+                <a href={`mailto:${contact.email}`}>Envoyer un email</a>
               </Button>
             </div>
           </div>
@@ -216,9 +230,18 @@ export function ContactSection() {
                   placeholder="Decrivez votre projet ou besoin..."
                 />
               </div>
-              <Button type="submit" size="lg" className="mt-6 gap-2 w-full sm:w-auto">
-                Envoyer le message
-                <Send className="h-4 w-4" />
+              <Button type="submit" size="lg" className="mt-6 gap-2 w-full sm:w-auto" disabled={isSubmitting}>
+                {isSubmitting ? (
+                  <>
+                    Envoi en cours...
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  </>
+                ) : (
+                  <>
+                    Envoyer le message
+                    <Send className="h-4 w-4" />
+                  </>
+                )}
               </Button>
             </form>
           </div>

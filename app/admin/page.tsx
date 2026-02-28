@@ -15,6 +15,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Save,
+  MessageSquare,
 } from "lucide-react"
 import { useSiteData } from "@/lib/site-data"
 import { Button } from "@/components/ui/button"
@@ -23,16 +24,20 @@ import { AdminHeroTab } from "@/components/admin/admin-hero-tab"
 import { AdminServicesTab } from "@/components/admin/admin-services-tab"
 import { AdminAboutTab } from "@/components/admin/admin-about-tab"
 import { AdminProcessTab } from "@/components/admin/admin-process-tab"
+import { AdminProjectsTab } from "@/components/admin/admin-projects-tab"
 import { AdminTeamTab } from "@/components/admin/admin-team-tab"
 import { AdminContactTab } from "@/components/admin/admin-contact-tab"
+import { AdminMessagesTab } from "@/components/admin/admin-messages-tab"
 
 const tabs = [
   { id: "hero", label: "Hero", icon: Zap },
   { id: "services", label: "Services", icon: Briefcase },
   { id: "about", label: "A propos", icon: Info },
   { id: "process", label: "Processus", icon: GitBranch },
+  { id: "projects", label: "Projets", icon: LayoutDashboard },
   { id: "team", label: "Equipe", icon: Users },
   { id: "contact", label: "Contact", icon: Phone },
+  { id: "messages", label: "Messages", icon: MessageSquare },
 ] as const
 
 type TabId = (typeof tabs)[number]["id"]
@@ -197,11 +202,17 @@ export default function AdminPage() {
           {activeTab === "process" && (
             <AdminProcessTab data={data} setData={setData} />
           )}
+          {activeTab === "projects" && (
+            <AdminProjectsTab data={data} setData={setData} />
+          )}
           {activeTab === "team" && (
             <AdminTeamTab data={data} setData={setData} />
           )}
           {activeTab === "contact" && (
             <AdminContactTab data={data} setData={setData} />
+          )}
+          {activeTab === "messages" && (
+            <AdminMessagesTab />
           )}
         </main>
       </div>
