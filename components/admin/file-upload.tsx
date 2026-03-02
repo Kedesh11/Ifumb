@@ -10,7 +10,7 @@ import { createWorker } from "tesseract.js"
 interface Props {
   value?: string
   onChange: (url: string) => void
-  onScan?: (text: string) => void
+  onScan?: (text: string, fileName?: string) => void
   label?: string
   className?: string
   accept?: string
@@ -31,25 +31,38 @@ export function FileUpload({ value, onChange, onScan, label, className = "", acc
   }, [value])
 
   const performOCR = async (file: File) => {
-    if (!onScan) return
+    if (!onScan) {
+      console.log("OCR: No onScan callback provided")
+      return
+    }
     
-    // Only perform OCR on images for simplicity (Tesseract works best on images)
-    if (!file.type.startsWith("image/")) return
+    // Always call onScan with filename first as a quick fallback
+    onScan("", file.name)
 
+    // Only perform OCR on images
+    if (!file.type.startsWith("image/")) {
+      console.log("OCR: Not an image file, skipping OCR", file.type)
+      return
+    }
+
+    console.log("OCR: Starting analysis for", file.name)
     setIsScanning(true)
     try {
-      const worker = await createWorker("fra") // French for this project
+      const worker = await createWorker("fra+eng")
       const { data: { text } } = await worker.recognize(file)
       await worker.terminate()
       
-      // Basic cleaning of scanned text
+      console.log("OCR: Raw text extracted:", text)
+
       const cleanedText = text
         .split("\n")
-        .filter(line => line.trim().length > 3)
-        .join("\n") // Keep newlines for better parsing in parent
-        .slice(0, 500)
+        .map(line => line.trim())
+        .filter(line => line.length > 3)
+        .join("\n") 
+        .slice(0, 1000)
       
-      onScan(cleanedText)
+      console.log("OCR: Cleaned text sent to callback:", cleanedText)
+      onScan(cleanedText, file.name)
     } catch (error) {
       console.error("OCR Error:", error)
     } finally {

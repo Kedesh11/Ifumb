@@ -750,14 +750,14 @@ export function AdminTeamTab({ data, setData }: Props) {
                           <FileUpload
                             value={cert.url}
                             onChange={(url) => updateCertification(fIndex, cIndex, "url", url)}
-                            onScan={(text) => {
-                              // Basic logic to pick a likely certification name
-                              // We look for common keywords
-                              const keywords = ["CERTIFICATE", "CERTIFICATION", "DIPLÔME", "ATTESTATION"]
+                            onScan={(text, fileName) => {
+                              console.log("Admin: Received OCR text for cert", cIndex, text, "FileName:", fileName)
+                              const keywords = ["CERTIFICATE", "CERTIFICATION", "DIPLÔME", "ATTESTATION", "COMPLETION", "ACCOMPLISHMENT", "RECOGNITION", "RÉUSSITE", "SUCCÈS", "AWARD"]
                               let suggestedName = ""
                               
-                              // Try to find a line with keywords
                               const lines = text.split("\n")
+
+                              // Strategy 1: Look for keywords
                               for (const line of lines) {
                                 if (keywords.some(k => line.toUpperCase().includes(k))) {
                                   suggestedName = line.trim()
@@ -765,7 +765,24 @@ export function AdminTeamTab({ data, setData }: Props) {
                                 }
                               }
                               
-                              if (suggestedName && (!cert.name || cert.name === "Nouvelle certification")) {
+                              // Strategy 2: Longest line in first 5 lines
+                              if (!suggestedName && lines.length > 0) {
+                                const topLines = lines.slice(0, 5).sort((a, b) => b.length - a.length)
+                                if (topLines[0] && topLines[0].length > 10) {
+                                  suggestedName = topLines[0].trim()
+                                }
+                              }
+
+                              // Strategy 3: Filename cleanup (highest confidence fallback)
+                              if (!suggestedName && fileName) {
+                                suggestedName = fileName
+                                  .split(".")[0]
+                                  .replace(/[-_]/g, " ")
+                                  .replace(/\b\w/g, (c) => c.toUpperCase()) // Title Case
+                              }
+
+                              if (suggestedName && (!cert.name || cert.name === "Nouvelle certification" || cert.name === "")) {
+                                console.log("Admin: Updating cert name to:", suggestedName)
                                 updateCertification(fIndex, cIndex, "name", suggestedName)
                               }
                             }}
