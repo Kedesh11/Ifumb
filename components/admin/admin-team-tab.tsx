@@ -745,6 +745,25 @@ export function AdminTeamTab({ data, setData }: Props) {
                           <FileUpload
                             value={cert.url}
                             onChange={(url) => updateCertification(fIndex, cIndex, "url", url)}
+                            onScan={(text) => {
+                              // Basic logic to pick a likely certification name
+                              // We look for common keywords
+                              const keywords = ["CERTIFICATE", "CERTIFICATION", "DIPLÔME", "ATTESTATION"]
+                              let suggestedName = ""
+                              
+                              // Try to find a line with keywords
+                              const lines = text.split("\n")
+                              for (const line of lines) {
+                                if (keywords.some(k => line.toUpperCase().includes(k))) {
+                                  suggestedName = line.trim()
+                                  break
+                                }
+                              }
+                              
+                              if (suggestedName && (!cert.name || cert.name === "Nouvelle certification")) {
+                                updateCertification(fIndex, cIndex, "name", suggestedName)
+                              }
+                            }}
                             label="Document (PDF, Image...)"
                             accept=".pdf,image/*"
                           />
