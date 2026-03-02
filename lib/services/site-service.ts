@@ -125,9 +125,9 @@ export const SiteService = {
     }
   },
 
-  // ─── Image Upload ──────────────────────────────────────────────
-
-  async uploadImage(file: File): Promise<string | null> {
+  // ─── File Upload ──────────────────────────────────────────────
+  
+  async uploadFile(file: File): Promise<string | null> {
     try {
       const fileExt = file.name.split(".").pop()
       const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`
@@ -145,7 +145,7 @@ export const SiteService = {
 
       return data.publicUrl
     } catch (error) {
-      console.error("Error uploading image:", error)
+      console.error("Error uploading file:", error)
       return null
     }
   },

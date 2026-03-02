@@ -67,6 +67,11 @@ export interface Skill {
   level: number
 }
 
+export interface Certification {
+  name: string
+  url?: string
+}
+
 export interface Experience {
   role: string
   company: string
@@ -89,7 +94,7 @@ export interface Founder {
   experience: Experience[]
   projects: Project[]
   skills: Skill[]
-  certifications: string[]
+  certifications: Certification[]
 }
 
 export interface ContactData {
@@ -300,8 +305,8 @@ export const defaultSiteData: SiteData = {
         { name: "Gestion de Projet Agile", level: 85 },
       ],
       certifications: [
-        "Certified Scrum Product Owner (CSPO)",
-        "Google Project Management Certificate",
+        { name: "Certified Scrum Product Owner (CSPO)" },
+        { name: "Google Project Management Certificate" },
       ],
     },
     {
@@ -355,8 +360,8 @@ export const defaultSiteData: SiteData = {
         { name: "Python / TypeScript / Go", level: 90 },
       ],
       certifications: [
-        "Certified Ethical Hacker (CEH)",
-        "AWS Solutions Architect Associate",
+        { name: "Certified Ethical Hacker (CEH)" },
+        { name: "AWS Solutions Architect Associate" },
       ],
     },
     {
@@ -410,8 +415,8 @@ export const defaultSiteData: SiteData = {
         { name: "Gestion de Partenariats", level: 88 },
       ],
       certifications: [
-        "Google Ads Certification",
-        "HubSpot Inbound Marketing",
+        { name: "Google Ads Certification" },
+        { name: "HubSpot Inbound Marketing" },
       ],
     },
   ],

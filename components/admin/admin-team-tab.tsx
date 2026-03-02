@@ -18,7 +18,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { ImageUpload } from "./image-upload"
-import type { SiteData, Founder } from "@/lib/site-data"
+import { FileUpload } from "./file-upload"
+import type { SiteData, Founder, Certification } from "@/lib/site-data"
 
 interface Props {
   data: SiteData
@@ -201,7 +202,7 @@ export function AdminTeamTab({ data, setData }: Props) {
     const founder = founders[fIndex]
     updateFounder(fIndex, "certifications", [
       ...founder.certifications,
-      "Nouvelle certification",
+      { name: "Nouvelle certification", url: "" },
     ])
   }
 
@@ -214,10 +215,10 @@ export function AdminTeamTab({ data, setData }: Props) {
     )
   }
 
-  const updateCertification = (fIndex: number, cIndex: number, value: string) => {
+  const updateCertification = (fIndex: number, cIndex: number, field: keyof Certification, value: string) => {
     const founder = founders[fIndex]
     const certs = [...founder.certifications]
-    certs[cIndex] = value
+    certs[cIndex] = { ...certs[cIndex], [field]: value }
     updateFounder(fIndex, "certifications", certs)
   }
 
@@ -729,13 +730,25 @@ export function AdminTeamTab({ data, setData }: Props) {
                             </Button>
                           </div>
                         </div>
-                        <Input
-                          value={cert}
-                          onChange={(e) =>
-                            updateCertification(fIndex, cIndex, e.target.value)
-                          }
-                          className="flex-1"
-                        />
+                        <div className="space-y-3">
+                          <div>
+                            <Label className="text-[10px]">Nom de la certification</Label>
+                            <Input
+                              value={cert.name}
+                              onChange={(e) =>
+                                updateCertification(fIndex, cIndex, "name", e.target.value)
+                              }
+                              placeholder="ex: AWS Solutions Architect"
+                              className="h-8 text-sm"
+                            />
+                          </div>
+                          <FileUpload
+                            value={cert.url}
+                            onChange={(url) => updateCertification(fIndex, cIndex, "url", url)}
+                            label="Document (PDF, Image...)"
+                            accept=".pdf,image/*"
+                          />
+                        </div>
                       </div>
                     ))}
                   </div>

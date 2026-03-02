@@ -22,7 +22,7 @@ export function ImageUpload({ value, onChange, label, className = "" }: Props) {
     if (!file) return
 
     setIsUploading(true)
-    const url = await SiteService.uploadImage(file)
+    const url = await SiteService.uploadFile(file)
     if (url) {
       onChange(url)
     } else {

@@ -10,6 +10,7 @@ import {
   GraduationCap,
   Award,
   Globe,
+  Download,
 } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 import {
@@ -44,6 +45,11 @@ interface Experience {
   description: string
 }
 
+interface Certification {
+  name: string
+  url?: string
+}
+
 interface Founder {
   name: string
   role: string
@@ -58,7 +64,7 @@ interface Founder {
   experience: Experience[]
   projects: Project[]
   skills: Skill[]
-  certifications: string[]
+  certifications: Certification[]
 }
 
 const defaultFounders: Founder[] = [
@@ -127,9 +133,9 @@ const defaultFounders: Founder[] = [
       { name: "Communication & Networking", level: 88 },
     ],
     certifications: [
-      "Certified Scrum Product Owner (CSPO)",
-      "Google Project Management Certificate",
-      "Design Thinking - IDEO",
+      { name: "Certified Scrum Product Owner (CSPO)" },
+      { name: "Google Project Management Certificate" },
+      { name: "Design Thinking - IDEO" },
     ],
   },
   {
@@ -197,9 +203,9 @@ const defaultFounders: Founder[] = [
       { name: "Base de Donnees & Data", level: 85 },
     ],
     certifications: [
-      "Certified Ethical Hacker (CEH)",
-      "AWS Solutions Architect Associate",
-      "CompTIA Security+",
+      { name: "Certified Ethical Hacker (CEH)" },
+      { name: "AWS Solutions Architect Associate" },
+      { name: "CompTIA Security+" },
     ],
   },
   {
@@ -267,9 +273,9 @@ const defaultFounders: Founder[] = [
       { name: "Analyse de Donnees", level: 82 },
     ],
     certifications: [
-      "Google Ads Certification",
-      "HubSpot Inbound Marketing",
-      "Meta Blueprint - Social Media Marketing",
+      { name: "Google Ads Certification" },
+      { name: "HubSpot Inbound Marketing" },
+      { name: "Meta Blueprint - Social Media Marketing" },
     ],
   },
 ]
@@ -391,9 +397,23 @@ function FounderPortfolio({ founder, open, onOpenChange }: { founder: Founder; o
                   </h4>
                   <div className="flex flex-wrap gap-2">
                     {founder.certifications.map((cert) => (
-                      <Badge key={cert} variant="secondary" className="text-xs">
-                        {cert}
-                      </Badge>
+                      <div key={cert.name} className="flex items-center gap-1">
+                        {cert.url ? (
+                          <a
+                            href={cert.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary transition-colors hover:bg-primary/20"
+                          >
+                            <Download className="h-3 w-3" />
+                            {cert.name}
+                          </a>
+                        ) : (
+                          <Badge variant="secondary" className="text-xs">
+                            {cert.name}
+                          </Badge>
+                        )}
+                      </div>
                     ))}
                   </div>
                 </div>
