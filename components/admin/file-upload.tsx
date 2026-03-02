@@ -45,9 +45,9 @@ export function FileUpload({ value, onChange, onScan, label, className = "", acc
       // Basic cleaning of scanned text
       const cleanedText = text
         .split("\n")
-        .filter(line => line.trim().length > 5) // Ignore short noisy lines
-        .join(" ")
-        .slice(0, 100) // Limit length
+        .filter(line => line.trim().length > 3)
+        .join("\n") // Keep newlines for better parsing in parent
+        .slice(0, 500)
       
       onScan(cleanedText)
     } catch (error) {
@@ -62,10 +62,11 @@ export function FileUpload({ value, onChange, onScan, label, className = "", acc
     if (!file) return
 
     // 1. Local Preview & OCR
+    const reader = new FileReader()
+    reader.onload = (e) => setPreviewUrl(e.target?.result as string)
+    reader.readAsDataURL(file)
+
     if (file.type.startsWith("image/")) {
-      const reader = new FileReader()
-      reader.onload = (e) => setPreviewUrl(e.target?.result as string)
-      reader.readAsDataURL(file)
       performOCR(file)
     }
 
@@ -101,35 +102,37 @@ export function FileUpload({ value, onChange, onScan, label, className = "", acc
         {isScanning && (
           <span className="flex items-center gap-1 text-[10px] text-primary animate-pulse">
             <Search className="h-3 w-3" />
-            Analyse OCR en cours...
+            Analyse intelligente...
           </span>
         )}
       </div>
       
-      <div className="relative flex flex-col items-center justify-center gap-4 rounded-lg border-2 border-dashed border-border bg-muted/30 p-4 transition-colors hover:bg-muted/50">
+      <div className="relative flex flex-col items-center justify-center gap-4 rounded-lg border-2 border-dashed border-border bg-muted/30 p-2 transition-colors hover:bg-muted/50">
         {previewUrl ? (
-          <div className="w-full space-y-4">
-            {isImage(previewUrl) ? (
-              <div className="relative h-48 w-full overflow-hidden rounded-md border border-border bg-card">
+          <div className="w-full space-y-3">
+            <div className="relative h-64 w-full overflow-hidden rounded-md border border-border bg-card">
+              {isImage(previewUrl) ? (
                 <Image
                   src={previewUrl}
                   alt="Preview"
                   fill
-                  className="object-contain p-2"
+                  className="object-contain p-1"
                 />
-              </div>
-            ) : (
-              <div className="flex w-full items-center justify-between rounded-md border border-border bg-card p-3">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded bg-primary/10 text-primary">
-                    <FileText className="h-5 w-5" />
-                  </div>
-                  <p className="text-sm font-medium text-foreground">Document PDF/Fichier</p>
+              ) : previewUrl.includes(".pdf") || previewUrl.startsWith("data:application/pdf") ? (
+                <iframe
+                  src={previewUrl}
+                  className="h-full w-full"
+                  title="PDF Preview"
+                />
+              ) : (
+                <div className="flex h-full flex-col items-center justify-center gap-2">
+                  <FileText className="h-10 w-10 text-muted-foreground" />
+                  <p className="text-xs text-muted-foreground">Aperçu non disponible</p>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
             
-            <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center justify-between gap-2 px-1">
               <div className="flex-1 overflow-hidden">
                 {value && (
                   <a 
@@ -138,8 +141,8 @@ export function FileUpload({ value, onChange, onScan, label, className = "", acc
                     rel="noopener noreferrer"
                     className="flex items-center gap-1 text-[10px] text-primary hover:underline"
                   >
-                    <Download className="h-2 w-2" />
-                    Télécharger le document final
+                    <Download className="h-2.5 w-2.5" />
+                    Lien direct
                   </a>
                 )}
               </div>
@@ -148,9 +151,9 @@ export function FileUpload({ value, onChange, onScan, label, className = "", acc
                 variant="destructive"
                 size="sm"
                 onClick={handleRemove}
-                className="h-8 gap-1 text-xs"
+                className="h-7 px-2 text-[10px]"
               >
-                <X className="h-3.5 w-3.5" />
+                <X className="h-3 w-3 mr-1" />
                 Supprimer
               </Button>
             </div>

@@ -216,10 +216,15 @@ export function AdminTeamTab({ data, setData }: Props) {
   }
 
   const updateCertification = (fIndex: number, cIndex: number, field: keyof Certification, value: string) => {
-    const founder = founders[fIndex]
-    const certs = [...founder.certifications]
-    certs[cIndex] = { ...certs[cIndex], [field]: value }
-    updateFounder(fIndex, "certifications", certs)
+    setData((prev) => {
+      const updatedFounders = [...prev.founders]
+      const founder = { ...updatedFounders[fIndex] }
+      const updatedCerts = [...founder.certifications]
+      updatedCerts[cIndex] = { ...updatedCerts[cIndex], [field]: value }
+      founder.certifications = updatedCerts
+      updatedFounders[fIndex] = founder
+      return { ...prev, founders: updatedFounders }
+    })
   }
 
   const moveCertification = (fIndex: number, cIndex: number, direction: "up" | "down") => {
